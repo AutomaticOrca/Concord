@@ -185,6 +185,76 @@ docs:
 
 ## Section 8: Extending the API
 
+81. Entity Framework relationship
+    create a new table called Photos
+    `dotnet ef migrations add UpdatedUserEntity`
+82. Seeding data
+    Data seeding is the process of populating a database with an initial set of data.
+    `dotnet ef database drop`
+
+read docs:
+entity framework core: Introduction to relationships, Mapping relationships in ef core, navigation property
+
+85. the repository pattern
+    a repository mediates between the domain and data mapping layers, acting like an in-memory domain object collection.
+
+86. create a repository
+
+87. updating the users controller
+    Photos are not showned in fetched data by default: EntityFramework is lazy by default, and unless we ask for a related entity, it's not gonna automatically give to us.
+
+    System.Text.Json.JsonException: A possible object cycle was detected. This can either be due to a cycle or if the object depth is larger than the maximum allowed depth of 32. photo->appUser->photo->appUser... ====> use Dto
+
+91. Configuring AutoMapper
+
+    **Specify the destination member**:
+
+    - We'll say `D` for destination, which maps to `D.PhotoUrl`, a property inside our `MemberDTO`.
+
+    **Give it the options and specify where to map from**:
+
+    - We use `O` for options, and then specify `MapFrom`. Inside the parentheses, we define the source.
+    - We'll say `S` for source, which maps to `S.Photos`, then use `FirstOrDefault()`. Inside, we use a lambda expression to fetch the `IsMain` photo.
+
+    **Lambda expression**:
+
+    - The expression is `x => x.IsMain`, and we access the `URL` property.
+
+    **Handling null reference warnings**:
+
+    - Since Automapper doesn't accommodate null reference types, we’ll get a warning. If the user has no photos, Automapper will set the `PhotoUrl` property to `null`. To remove this compiler warning, we use the **null-forgiving operator** (the exclamation mark `!`), which tells the compiler it's okay because Automapper will set `PhotoUrl` to `null` instead of throwing an exception.
+
+    **Null reference handling explanation**:
+
+    - If there’s no photo, `IsMain` won’t exist. So, if we try to access the `URL`, the compiler is right to warn about a potential null reference error. However, Automapper will just set `PhotoUrl` to `null` if the source is `null`, preventing any exception.
+
+    ```
+    // API/Helpers/AutoMapperProfiles.cs
+    
+    using System;
+    using API.DTOs;
+    using API.Entities;
+    using AutoMapper;
+    
+    namespace API.Helpers;
+    
+    public class AutoMapperProfiles : Profile
+    {
+        public AutoMapperProfiles()
+        {
+            CreateMap<AppUser, MemberDto>()
+                .ForMember(
+                    d => d.PhotoUrl,
+                    o => o.MapFrom(s => s.Photos.FirstOrDefault(x => x.IsMain)!.Url)
+                );
+            CreateMap<Photo, PhotoDto>();
+        }
+    }
+    
+    ```
+
+    
+
 Section 10: Updating resources
 
 Section 11: Adding photo upload functionality

@@ -24,7 +24,7 @@ public class TokenService(IConfiguration config) : ITokenService
         // token contains claims about the user (claim is user would claim about themselves)
         // new Claim (ClaimTypes.NameIdentifier, user.Username)
         //  use name identifier and set this to be the user dot username.
-        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, user.Username) };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, user.UserName) };
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 

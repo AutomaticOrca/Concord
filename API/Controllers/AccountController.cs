@@ -17,24 +17,24 @@ public class AccountController(DataContext context, ITokenService tokenService) 
         // Check if the username already exists in the db
         if (await UserExists(registerDto.Username))
             return BadRequest("Username is token");
-
+        return Ok();
         // Create an instance of HMACSHA512 to hash the password
-        using var hmac = new HMACSHA512();
+        // using var hmac = new HMACSHA512();
 
-        // Create a new user object and set the username and hashed password
-        var user = new AppUser
-        {
-            Username = registerDto.Username.ToLower(),
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-            PasswordSalt = hmac.Key
-        };
+        // // Create a new user object and set the username and hashed password
+        // var user = new AppUser
+        // {
+        //     Username = registerDto.Username.ToLower(),
+        //     PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
+        //     PasswordSalt = hmac.Key
+        // };
 
-        // Add the user to the context and save changes to the database
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
+        // // Add the user to the context and save changes to the database
+        // context.Users.Add(user);
+        // await context.SaveChangesAsync();
 
-        // Return the newly created user
-        return new UserDto { UserName = user.Username, Token = tokenService.CreateToken(user) };
+        // // Return the newly created user
+        // return new UserDto { UserName = user.Username, Token = tokenService.CreateToken(user) };
     }
 
     [HttpPost("login")]
@@ -42,7 +42,7 @@ public class AccountController(DataContext context, ITokenService tokenService) 
     {
         // Find the user in db by username
         var user = await context.Users.FirstOrDefaultAsync(x =>
-            x.Username == loginDto.Username.ToLower()
+            x.UserName == loginDto.Username.ToLower()
         );
 
         // If the user doesn't exist, return an unauthorized response
@@ -63,11 +63,11 @@ public class AccountController(DataContext context, ITokenService tokenService) 
         }
 
         // If the password is valid, return the user object
-        return new UserDto { UserName = user.Username, Token = tokenService.CreateToken(user) };
+        return new UserDto { UserName = user.UserName, Token = tokenService.CreateToken(user) };
     }
 
     private async Task<bool> UserExists(string username)
     {
-        return await context.Users.AnyAsync(x => x.Username.ToLower() == username.ToLower());
+        return await context.Users.AnyAsync(x => x.UserName.ToLower() == username.ToLower());
     }
 }
