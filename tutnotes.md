@@ -183,6 +183,11 @@ docs:
 
 ## Section 7: Error handling
 
+RequestDelegate: process an HTTP request.
+IHostEnvironment: provides information about hosting environment an application is running in.
+HttpContext: Encapsulates all HTTP-specific information about an individual HTTP request.
+Exception: Message property: Gets a message that describes the current exception.
+
 ## Section 8: Extending the API
 
 81. Entity Framework relationship
