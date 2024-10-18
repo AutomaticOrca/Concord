@@ -264,6 +264,24 @@ Section 10: Updating resources
 
 Section 11: Adding photo upload functionality
 
+`CreatedAtAction` - 
+
+`Lazy Loading` of EntityFramework Core ---> `Eager Loading`
+
+```c#
+// AccountController.cs - login - Find the user in db by username
+var user = await context
+    .Users
+    .Include(p => p.Photos)		// Eager Loading
+    .FirstOrDefaultAsync(x => x.UserName == loginDto.Username.ToLower());
+```
+
+
+
+
+
+
+
 Section 12: Reactive forms
 
 Section 13: Paging, sorting and filtering

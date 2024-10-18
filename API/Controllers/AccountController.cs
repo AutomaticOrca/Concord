@@ -41,9 +41,9 @@ public class AccountController(DataContext context, ITokenService tokenService) 
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
         // Find the user in db by username
-        var user = await context.Users.FirstOrDefaultAsync(x =>
-            x.UserName == loginDto.Username.ToLower()
-        );
+        var user = await context
+            .Users.Include(p => p.Photos)
+            .FirstOrDefaultAsync(x => x.UserName == loginDto.Username.ToLower());
 
         // If the user doesn't exist, return an unauthorized response
         if (user == null)
