@@ -264,7 +264,7 @@ Section 10: Updating resources
 
 Section 11: Adding photo upload functionality
 
-`CreatedAtAction` - 
+`CreatedAtAction` - Creates a [CreatedAtActionResult](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.createdatactionresult?view=aspnetcore-8.0) object that produces a [Status201Created](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.statuscodes.status201created?view=aspnetcore-8.0#microsoft-aspnetcore-http-statuscodes-status201created) response.
 
 `Lazy Loading` of EntityFramework Core ---> `Eager Loading`
 
@@ -278,11 +278,40 @@ var user = await context
 
 
 
-
-
-
-
 Section 12: Reactive forms
+
+Required
+
+
+
+```C#
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace API.DTOs;
+
+public class RegisterDto
+{
+    [Required]
+    public required string Username { get; set; } = string.Empty;
+
+
+    [Required]
+    [StringLength(8, MinimumLength = 4)]
+    public required string Password { get; set; } = string.Empty;
+}
+
+```
+
+
+
+AutoMapper 
+
+
+
+Required member 'UserDto.UserName' must be set in the object initializer or attribute constructor.
+
+
 
 Section 13: Paging, sorting and filtering
 

@@ -4,12 +4,14 @@ using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Interfaces;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(DataContext context, ITokenService tokenService) : BaseApiController
+public class AccountController(DataContext context, ITokenService tokenService, IMapper mapper)
+    : BaseApiController
 {
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
@@ -17,7 +19,21 @@ public class AccountController(DataContext context, ITokenService tokenService) 
         // Check if the username already exists in the db
         if (await UserExists(registerDto.Username))
             return BadRequest("Username is token");
-        return Ok();
+        using var hmac = new HMACSHA512();
+        var user = mapper.Map<AppUser>(registerDto);
+        user.UserName = registerDto.Username.ToLower();
+        user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
+        user.PasswordSalt = hmac.Key;
+
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+
+        return new UserDto
+        {
+            Username = user.UserName,
+            Token = tokenService.CreateToken(user),
+            KnownAs = user.KnownAs
+        };
         // Create an instance of HMACSHA512 to hash the password
         // using var hmac = new HMACSHA512();
 
@@ -63,7 +79,13 @@ public class AccountController(DataContext context, ITokenService tokenService) 
         }
 
         // If the password is valid, return the user object
-        return new UserDto { UserName = user.UserName, Token = tokenService.CreateToken(user) };
+        return new UserDto
+        {
+            Username = user.UserName,
+            KnownAs = user.KnownAs,
+            Token = tokenService.CreateToken(user),
+            PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+        };
     }
 
     private async Task<bool> UserExists(string username)

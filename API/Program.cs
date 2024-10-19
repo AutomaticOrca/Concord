@@ -9,13 +9,16 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddApplicationServices(builder.Configuration);
-builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddApplicationServices(builder.Configuration); // Extensions/ApplicationServices
+builder.Services.AddIdentityServices(builder.Configuration); // Extensions/IndentityServices
 
+// Builds the web application
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// use custom middleware to handle global exceptions
 app.UseMiddleware<ExceptionMiddleware>();
+
+// Configure CORS to allow requests from specific origins
 app.UseCors(x =>
     x.AllowAnyHeader()
         .AllowAnyMethod()
@@ -31,18 +34,23 @@ app.UseCors(x =>
 
 // app.UseHttpsRedirection(); // enforece https
 
-app.UseAuthentication();
-app.UseAuthorization();
+// authentication middleware (JWT-based)
+app.UseAuthentication(); // Handles verifying incoming JWT Tokens
 
+// authorization middleware
+app.UseAuthorization(); // Handles authenticated users can access protected resources
+
+// Map incoming requests to the appropriate controllers
 app.MapControllers();
 
+// Database migration and seeding
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<DataContext>();
     await context.Database.MigrateAsync();
-    await Seed.SeedUsers(context);
+    await Seed.SeedUsers(context); // Data/Seed.cs
 }
 catch (Exception ex)
 {
@@ -50,4 +58,5 @@ catch (Exception ex)
     logger.LogError(ex, "An error occurred during migration");
 }
 
+// Run the web app
 app.Run();
