@@ -1,4 +1,4 @@
-## Section 2: dotnet API skeleton
+# Section 2: dotnet API skeleton
 
 6. dotnet CLI
    dotnet --info
@@ -66,9 +66,9 @@ nuget: dotnet-ef, version, synchronizing the structure of db through code change
     use synchronous code might block the thread
     if we're using async code with the same number of threads, it's capable of handling much more requests because it can delegate the task to other threads and still respond to other requests.
 
-## Section 3: Angular skeleton
 
-## Section 4: Auth basic
+
+# Section 4: Auth basic
 
 30. Safe storage of passwords
     hashing and salting(scramble the hash)
@@ -181,14 +181,14 @@ docs:
 39. Adding extension methods
     static: use method inside class without creating a new instance of this class.
 
-## Section 7: Error handling
+# Section 7: Error handling
 
 RequestDelegate: process an HTTP request.
 IHostEnvironment: provides information about hosting environment an application is running in.
 HttpContext: Encapsulates all HTTP-specific information about an individual HTTP request.
 Exception: Message property: Gets a message that describes the current exception.
 
-## Section 8: Extending the API
+# Section 8: Extending the API
 
 81. Entity Framework relationship
     create a new table called Photos
@@ -260,9 +260,11 @@ entity framework core: Introduction to relationships, Mapping relationships in e
 
     
 
-Section 10: Updating resources
+# Section 10: Updating resources
 
-Section 11: Adding photo upload functionality
+
+
+# Section 11: Adding photo upload functionality
 
 `CreatedAtAction` - Creates a [CreatedAtActionResult](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.createdatactionresult?view=aspnetcore-8.0) object that produces a [Status201Created](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.statuscodes.status201created?view=aspnetcore-8.0#microsoft-aspnetcore-http-statuscodes-status201created) response.
 
@@ -278,7 +280,7 @@ var user = await context
 
 
 
-Section 12: Reactive forms
+# Section 12: Reactive forms
 
 Required
 
@@ -313,7 +315,128 @@ Required member 'UserDto.UserName' must be set in the object initializer or attr
 
 
 
-Section 13: Paging, sorting and filtering
+# Section 13: Paging, sorting and filtering
+
+pagination
+
+pass the pagination parameters via a query string
+
+Page size: 
+
+deferred execution: build up a tree expressions inside Entity Framework for our query. We build up an expression tree and we store this as an eye variable of type.
+
+
+
+`IQueryable<User>`
+
+```C#
+var query = context.Users
+	.Where(x => x.Gender == gender)
+	.OrderBy(x => x.UserName)
+	.Take(5)
+	.Skip(5)
+  .AsQueryable()
+```
+
+
+
+`Execution`
+
+```C#
+query.ToListAsync()
+query.ToArrayAsync()
+query.ToDictionary()
+
+query.Count()
+```
+
+
+
+- [Microsoft Docs - IQueryable Interface](https://learn.microsoft.com/en-us/dotnet/api/system.linq.iqueryable?view=net-7.0)
+- [Microsoft Docs - Entity Framework Paging](https://learn.microsoft.com/en-us/ef/core/querying/pagination)
+
+- [Microsoft Docs - Expression Trees in .NET](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/expression-trees/)
+- [Microsoft Docs - LINQ (Language Integrated Query)](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/)
+
+
+
+/Helpers/PagedList:  Pagination from Database
+
+/Helpers/PaginationHeader: Pagination request from client side to server
+
+
+
+415 Unsupported Media Type -----> [FromQuery]
+
+```C#
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers(
+        [FromQuery] UserParams userParams
+    )
+    {
+				......
+    }
+```
+
+
+
+UsersController.cs
+
+```C#
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers(
+        [FromQuery] UserParams userParams
+    )
+    {
+        userParams.CurrentUsername = User.GetUsername();
+				......
+    }
+```
+
+
+
+
+
+> API/Extensions/ClaimsPrincpleExtensions.cs
+>
+> - [Microsoft Docs - Extension Methods](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods)
+
+
+
+
+
+
+
+```C#
+public class UserRepository(DataContext context, IMapper mapper) : IUserRepository
+{
+      public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
+    {
+        var query = context.Users.AsQueryable();
+        query = query.Where(x => x.UserName != userParams.CurrentUsername);
+				......
+    }
+
+}
+```
+
+DbSet and IDbSet implement IQueryable and so can be used as the starting point for writing a LINQ query against the database.
+
+
+
+Action Filter
+
+> - [Action Filters in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/mvc/controllers/filters?view=aspnetcore-7.0)
+>
+> *Filters* in ASP.NET Core allow code to run before or after specific stages in the request processing pipeline.
+>
+> Built-in filters handle tasks such as:
+>
+> - Authorization, preventing access to resources a user isn't authorized for.
+> - Response caching, short-circuiting the request pipeline to return a cached response.
+
+
+
+
 
 Section 14: Adding the likes feature
 
