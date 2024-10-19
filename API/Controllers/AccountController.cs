@@ -32,7 +32,8 @@ public class AccountController(DataContext context, ITokenService tokenService, 
         {
             Username = user.UserName,
             Token = tokenService.CreateToken(user),
-            KnownAs = user.KnownAs
+            KnownAs = user.KnownAs,
+            Gender = user.Gender
         };
         // Create an instance of HMACSHA512 to hash the password
         // using var hmac = new HMACSHA512();
@@ -84,6 +85,7 @@ public class AccountController(DataContext context, ITokenService tokenService, 
             Username = user.UserName,
             KnownAs = user.KnownAs,
             Token = tokenService.CreateToken(user),
+            Gender = user.Gender,
             PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
         };
     }
