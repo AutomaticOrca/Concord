@@ -436,6 +436,8 @@ Action Filter
 
 
 
+LogUserActivity被用在哪里了
+
 
 
 Section 14: Adding the likes feature
