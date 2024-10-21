@@ -61,6 +61,7 @@ public class LikesRepository(DataContext context, IMapper mapper) : ILikesReposi
 
                 return await likes
                     .Where(x => x.TargetUserId == userId && likeIds.Contains(x.SourceUserId))
+                    .Select(x => x.SourceUser)
                     .ProjectTo<MemberDto>(mapper.ConfigurationProvider)
                     .ToListAsync();
         }
