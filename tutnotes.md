@@ -442,7 +442,7 @@ LogUserActivity
 
 # Section 14: Adding the likes feature
 
-## Intro
+### Intro
 
 Many to Many Relationships:
 
@@ -471,7 +471,7 @@ focus on the domain of your application and start creating classes for your doma
 
 
 
-## Adding a likes entity
+### Adding a likes entity
 
 Entity/AppUser.cs
 
@@ -546,6 +546,30 @@ dotnet ef migrations add UserLikesAdded
 ```
 
 
+
+### Adding a likes repository
+
+API/Interfaces/ILikesRepository.cs
+
+API/Data/LikesRepository.cs
+
+API/Extensions/ApplicationServiceExtensions.cs
+
+```csharp
+public static class ApplicationServiceExtensions
+{
+    public static IServiceCollection AddApplicationServices(
+        this IServiceCollection services,
+        IConfiguration config
+    )
+    {
+        ......
+        services.AddScoped<ILikesRepository, LikesRepository>();
+				......
+    }
+}
+
+```
 
 
 
