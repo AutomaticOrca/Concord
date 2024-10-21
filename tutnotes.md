@@ -491,12 +491,6 @@ public class AppUser
 
 
 
-```C#
-dotnet ef migrations add UserLikesAdded
-```
-
-
-
 API/Data/DataContext.cs
 
 ```csharp
@@ -506,33 +500,50 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
+// This class inherits from DbContext, which is the Entity Framework Core context class used to interact with the database.
 public class DataContext(DbContextOptions options) : DbContext(options)
 {
+    // Defines two DbSets representing tables in the database: AppUser and UserLike.
     public DbSet<AppUser> Users { get; set; }
     public DbSet<UserLike> Likes { get; set; }
 
+    // OnModelCreating method is used to configure relationships, keys, and other database rules for entities.
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        // Call the base OnModelCreating method to ensure default behaviors are inherited.
         base.OnModelCreating(builder);
+
+        // Define the primary key for the UserLike entity, which is a composite key consisting of SourceUserId and TargetUserId.
         builder.Entity<UserLike>().HasKey(k => new { k.SourceUserId, k.TargetUserId });
+
+        // Configure a one-to-many relationship between UserLike and SourceUser.
+        // A user can like many users (LikedUsers).
         builder
-            .Entity<UserLike>()
-            .HasOne(s => s.SourceUser)
-            .WithMany(l => l.LikedUsers)
-            .HasForeignKey(s => s.SourceUserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .Entity<UserLike>()                       // Configure the UserLike entity
+            .HasOne(s => s.SourceUser)                // A UserLike is associated with one SourceUser
+            .WithMany(l => l.LikedUsers)              // A SourceUser can be associated with many LikedUsers
+            .HasForeignKey(s => s.SourceUserId)       // Foreign key is SourceUserId
+            .OnDelete(DeleteBehavior.Cascade);        // If the SourceUser is deleted, cascade delete the related UserLike records.
+
+        // Configure a one-to-many relationship between UserLike and TargetUser.
+        // A user can be liked by many users (LikedByUsers).
         builder
-            .Entity<UserLike>()
-            .HasOne(s => s.TargetUser)
-            .WithMany(l => l.LikedByUsers)
-            .HasForeignKey(s => s.TargetUserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .Entity<UserLike>()                       // Configure the UserLike entity
+            .HasOne(s => s.TargetUser)                // A UserLike is associated with one TargetUser
+            .WithMany(l => l.LikedByUsers)            // A TargetUser can be associated with many LikedByUsers
+            .HasForeignKey(s => s.TargetUserId)       // Foreign key is TargetUserId
+            .OnDelete(DeleteBehavior.Cascade);        // If the TargetUser is deleted, cascade delete the related UserLike records.
     }
 }
+
 
 ```
 
 
+
+```shell
+dotnet ef migrations add UserLikesAdded
+```
 
 
 
