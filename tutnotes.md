@@ -436,11 +436,109 @@ Action Filter
 
 
 
-LogUserActivity被用在哪里了
+LogUserActivity
 
 
 
-Section 14: Adding the likes feature
+# Section 14: Adding the likes feature
+
+## Intro
+
+Many to Many Relationships:
+
+AppUser   ------(can be liked by many)----> AppUser
+
+​		<------(can like many)---------------- 
+
+
+
+| SourceUserId | LikedUsesrId |
+| ------------ | ------------ |
+| 1            | 7            |
+| 1            | 8            |
+
+
+
+`AppUser` has one `SourceUser` with many `LikedUsers`
+
+`AppUser` has one `LikedUser` with many `LikedByUsers`
+
+
+
+**CodeFirst**
+
+focus on the domain of your application and start creating classes for your domain entity rather than design your database first and then create the classes which match your database design.
+
+
+
+## Adding a likes entity
+
+Entity/AppUser.cs
+
+```C#
+using System;
+
+namespace API.Entities;
+
+public class AppUser
+{
+		...
+    public List<AppUser> LikedByUsers { get; set; } = [];
+    public List<AppUser> LikedUsers { get; set; } = [];
+}
+
+```
+
+
+
+```C#
+dotnet ef migrations add UserLikesAdded
+```
+
+
+
+API/Data/DataContext.cs
+
+```csharp
+using System;
+using API.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace API.Data;
+
+public class DataContext(DbContextOptions options) : DbContext(options)
+{
+    public DbSet<AppUser> Users { get; set; }
+    public DbSet<UserLike> Likes { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.Entity<UserLike>().HasKey(k => new { k.SourceUserId, k.TargetUserId });
+        builder
+            .Entity<UserLike>()
+            .HasOne(s => s.SourceUser)
+            .WithMany(l => l.LikedUsers)
+            .HasForeignKey(s => s.SourceUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .Entity<UserLike>()
+            .HasOne(s => s.TargetUser)
+            .WithMany(l => l.LikedByUsers)
+            .HasForeignKey(s => s.TargetUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+```
+
+
+
+
+
+
+
+
 
 Section 15: Adding the Messaging feature
 
