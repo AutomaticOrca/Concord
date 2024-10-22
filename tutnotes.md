@@ -575,7 +575,135 @@ public static class ApplicationServiceExtensions
 
 
 
-Section 15: Adding the Messaging feature
+# Section 15: Adding the Messaging feature
+
+many to many to many relationships
+
+
+
+user can receive many messages and can send many messages --> join table between users 
+
+
+
+**Setting up the entities for message**
+
+Entity/Message.cs
+
+```cs
+using System;
+
+namespace API.Entities;
+
+public class Message
+{
+    public int Id { get; set; }
+    public required string SenderUsername { get; set; }
+    public required string RecipientUsername { get; set; }
+    public required string Content { get; set; }
+    public DateTime? DateRead { get; set; }
+    public DateTime MessageSent { get; set; } = DateTime.UtcNow;
+    public bool SenderDeleted { get; set; }
+    public bool RecipientUsernameDeleted { get; set; }
+
+    // navigation properties
+    public int SenderId { get; set; }
+    public AppUser Sender { get; set; } = null!;
+    public int RecipientId { get; set; }
+    public AppUser Recipient { get; set; } = null!;
+}
+```
+
+
+
+API/Entities/AppUser.cs
+
+```cs
+using System;
+
+namespace API.Entities;
+
+public class AppUser
+{
+		......
+		public List<Message> MessagesSent { get; set; } = [];
+    public List<Message> MessagesReceived { get; set; } = [];
+}
+
+```
+
+
+
+API/Data/DataContext.cs
+
+```cs
+using System;
+using API.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace API.Data;
+
+// DbContext class for database interaction
+public class DataContext(DbContextOptions options) : DbContext(options)
+{
+    // DbSets representing tables
+		......
+    public DbSet<Message> Messages { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+				......
+        builder
+            .Entity<Message>()
+            .HasOne(x => x.Recipient)
+            .WithMany(x => x.MessagesReceived)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .Entity<Message>()
+            .HasOne(x => x.Sender)
+            .WithMany(x => x.MessagesSent)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+```
+
+
+
+```shell
+dotnet ef migrations add MessageEntityAdded
+```
+
+
+
+Setting up the message repository
+
+
+
+Setting up the automapper profiles
+
+
+
+Adding a message controller
+
+
+
+Getting the messages from the Repo
+
+
+
+Getting the message thread for 2 users
+
+
+
+
+
+
+
+
+
+
+
+
 
 Section 16: Identity and role management
 
