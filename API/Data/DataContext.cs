@@ -34,12 +34,16 @@ public class DataContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(s => s.TargetUserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Configure one-to-many relationship for messages:
+        // One recipient can receive many messages
         builder
             .Entity<Message>()
-            .HasOne(x => x.Recipient)
-            .WithMany(x => x.MessagesReceived)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasOne(x => x.Recipient) // Each message has one recipient
+            .WithMany(x => x.MessagesReceived) // One user can receive multiple messages
+            .OnDelete(DeleteBehavior.Restrict); // Prevents automatic deletion of messages if recipient is deleted
 
+        // Configure one-to-many relationship for messages:
+        // One sender can send many messages
         builder
             .Entity<Message>()
             .HasOne(x => x.Sender)
