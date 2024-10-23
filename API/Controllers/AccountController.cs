@@ -22,8 +22,6 @@ public class AccountController(DataContext context, ITokenService tokenService, 
         using var hmac = new HMACSHA512();
         var user = mapper.Map<AppUser>(registerDto);
         user.UserName = registerDto.Username.ToLower();
-        user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
-        user.PasswordSalt = hmac.Key;
 
         context.Users.Add(user);
         await context.SaveChangesAsync();
@@ -65,19 +63,6 @@ public class AccountController(DataContext context, ITokenService tokenService, 
         // If the user doesn't exist, return an unauthorized response
         if (user == null)
             return Unauthorized("Invalid username");
-
-        // Recreate the HMACSHA512 instance with the user's stored password salt
-        using var hmac = new HMACSHA512(user.PasswordSalt);
-
-        // Hash the input password using the same salt and HMACSHA512
-        var ComputeHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
-
-        // Compare the hashed input password with the stored password hash byte by byte
-        for (int i = 0; i < ComputeHash.Length; i++)
-        {
-            if (ComputeHash[i] != user.PasswordHash[i])
-                return Unauthorized("Invalid password");
-        }
 
         // If the password is valid, return the user object
         return new UserDto

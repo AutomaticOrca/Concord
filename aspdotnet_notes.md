@@ -496,7 +496,7 @@ API/Helper/PaginationHeader.cs	server ---> client: server tells client paginatio
 
 # Section 14: Adding the likes feature
 
-### Intro
+**Intro**
 
 Many to Many Relationships:
 
@@ -525,7 +525,7 @@ focus on the domain of your application and start creating classes for your doma
 
 
 
-### Adding a likes entity
+**Adding a likes entity**
 
 Entity/AppUser.cs
 
@@ -601,7 +601,7 @@ dotnet ef migrations add UserLikesAdded
 
 
 
-### Adding a likes repository
+**Adding a likes repository**
 
 API/Interfaces/ILikesRepository.cs
 
@@ -731,7 +731,90 @@ dotnet ef migrations add MessageEntityAdded
 
 
 
-Setting up the message repository
+# 16. Setting up the message repository
+
+**Intro**
+
+> .NET Identity
+> Role Management
+> Policy based authorisation
+> UserManager<T>
+> SiginInManager<T>
+> RoleManager<T>
+
+
+
+Setting up the entities
+
+Join table between `AppUser` and `AppRole`  ---> `AppUserRole`
+
+
+
+
+
+Configuring the DbContext
+
+
+
+Configuring the startup class
+
+
+
+Refactoring and adding a new migration
+
+
+
+Updating the seed method
+
+
+
+Updating the account controller
+
+
+
+Adding roles to the app
+
+
+
+Adding the roles to the JWT token
+
+
+
+Adding policy based authorisation
+
+
+
+Getting the users with roles
+
+
+
+Editing user roles
+
+
+
+Adding an admin component
+
+
+
+Adding an admin guard
+
+
+
+Adding a custom directive
+
+
+
+Adding the edit roles component
+
+
+
+Setting up modals
+
+
+
+Editing roles part two
+
+
 
 
 
