@@ -440,6 +440,60 @@ LogUserActivity
 
 
 
+Helper/PagedList.cs/createAsync
+
+```cs
+using System;
+using System.Diagnostics;
+using API.DTOs;
+using Microsoft.EntityFrameworkCore;
+
+namespace API.Helpers;
+
+public class PagedList<T> : List<T>
+{
+    public PagedList(IEnumerable<T> items, int count, int pageNumber, int pageSize)
+    {
+        CurrentPage = pageNumber;
+        TotalPages = (int)Math.Ceiling(count / (double)pageSize);
+        PageSize = pageSize;
+        TotalCount = count;
+        AddRange(items);
+    }
+
+    public int CurrentPage { get; set; }
+    public int TotalPages { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+
+    public static async Task<PagedList<T>> CreateAsync(
+        IQueryable<T> source,
+        int pageNumber,
+        int pageSize
+    )
+    {
+        var count = await source.CountAsync();
+        var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+        return new PagedList<T>(items, count, pageNumber, pageSize);
+    }
+}
+```
+
+`CountAsync` is used to asynchronously calculate the total count.
+
+By using `Skip` to skip the records that have already been displayed 
+and then using `Take` to retrieve the records for the current page, this approach effectively reduces the amount of data queried each time, returning only the portion of data requested by the user.
+
+
+
+API/Helper/PaginationParams.cs	client ---> server: client tells server how to pagination
+
+API/Helper/PaginationHeader.cs	server ---> client: server tells client pagination metadata
+
+
+
+
+
 # Section 14: Adding the likes feature
 
 ### Intro
@@ -585,6 +639,8 @@ user can receive many messages and can send many messages --> join table between
 
 
 
+
+
 **Setting up the entities for message**
 
 Entity/Message.cs
@@ -694,6 +750,8 @@ Getting the messages from the Repo
 Getting the message thread for 2 users
 
 
+
+Deleting messages on the API
 
 
 

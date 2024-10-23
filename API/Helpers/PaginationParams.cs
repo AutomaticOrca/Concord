@@ -11,5 +11,19 @@ public class PaginationParams
     {
         get => _pageSize;
         set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+
+        // get { return _pageSize; }
+        // set
+        // {
+        //     // Ensure that the page size does not exceed the maximum allowed value
+        //     if (value > MaxPageSize)
+        //     {
+        //         _pageSize = MaxPageSize;
+        //     }
+        //     else
+        //     {
+        //         _pageSize = value;
+        //     }
+        // }
     }
 }

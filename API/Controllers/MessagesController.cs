@@ -56,7 +56,7 @@ public class MessagesController(
     )
     {
         messageParams.Username = User.GetUsername();
-        var messages = await messageRepository.GetMssagedForUsers(messageParams);
+        var messages = await messageRepository.GetMssagesForUsers(messageParams);
 
         Response.AddPaginationHeader(messages);
         return messages;
