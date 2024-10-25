@@ -61,7 +61,7 @@ public class AccountController(DataContext context, ITokenService tokenService, 
             .FirstOrDefaultAsync(x => x.UserName == loginDto.Username.ToLower());
 
         // If the user doesn't exist, return an unauthorized response
-        if (user == null)
+        if (user == null || user.UserName == null)
             return Unauthorized("Invalid username");
 
         // If the password is valid, return the user object
@@ -77,6 +77,6 @@ public class AccountController(DataContext context, ITokenService tokenService, 
 
     private async Task<bool> UserExists(string username)
     {
-        return await context.Users.AnyAsync(x => x.UserName.ToLower() == username.ToLower());
+        return await context.Users.AnyAsync(x => x.NormalizedUserName == username.ToUpper());
     }
 }

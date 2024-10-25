@@ -21,6 +21,9 @@ public class TokenService(IConfiguration config) : ITokenService
         // by using encoding and then UTF8 just as with them before and get bytes.
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
 
+        if (user.UserName == null)
+            throw new Exception("No username for user");
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),

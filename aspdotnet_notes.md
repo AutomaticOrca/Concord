@@ -766,6 +766,12 @@ Refactoring and adding a new migration
 
 Updating the seed method
 
+```shell
+dotnet ef database drop
+```
+
+
+
 
 
 Updating the account controller
