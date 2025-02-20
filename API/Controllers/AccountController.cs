@@ -4,12 +4,14 @@ using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Interfaces;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(DataContext context, ITokenService tokenService) : BaseApiController
+public class AccountController(DataContext context, ITokenService tokenService, IMapper mapper)
+    : BaseApiController
 {
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
@@ -17,33 +19,48 @@ public class AccountController(DataContext context, ITokenService tokenService) 
         // Check if the username already exists in the db
         if (await UserExists(registerDto.Username))
             return BadRequest("Username is token");
-
-        // Create an instance of HMACSHA512 to hash the password
         using var hmac = new HMACSHA512();
+        var user = mapper.Map<AppUser>(registerDto);
+        user.UserName = registerDto.Username.ToLower();
+        user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
+        user.PasswordSalt = hmac.Key;
 
-        // Create a new user object and set the username and hashed password
-        var user = new AppUser
-        {
-            Username = registerDto.Username.ToLower(),
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-            PasswordSalt = hmac.Key
-        };
-
-        // Add the user to the context and save changes to the database
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        // Return the newly created user
-        return new UserDto { UserName = user.Username, Token = tokenService.CreateToken(user) };
+        return new UserDto
+        {
+            Username = user.UserName,
+            Token = tokenService.CreateToken(user),
+            KnownAs = user.KnownAs,
+            Gender = user.Gender
+        };
+        // Create an instance of HMACSHA512 to hash the password
+        // using var hmac = new HMACSHA512();
+
+        // // Create a new user object and set the username and hashed password
+        // var user = new AppUser
+        // {
+        //     Username = registerDto.Username.ToLower(),
+        //     PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
+        //     PasswordSalt = hmac.Key
+        // };
+
+        // // Add the user to the context and save changes to the database
+        // context.Users.Add(user);
+        // await context.SaveChangesAsync();
+
+        // // Return the newly created user
+        // return new UserDto { UserName = user.Username, Token = tokenService.CreateToken(user) };
     }
 
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
         // Find the user in db by username
-        var user = await context.Users.FirstOrDefaultAsync(x =>
-            x.Username == loginDto.Username.ToLower()
-        );
+        var user = await context
+            .Users.Include(p => p.Photos)
+            .FirstOrDefaultAsync(x => x.UserName == loginDto.Username.ToLower());
 
         // If the user doesn't exist, return an unauthorized response
         if (user == null)
@@ -63,11 +80,18 @@ public class AccountController(DataContext context, ITokenService tokenService) 
         }
 
         // If the password is valid, return the user object
-        return new UserDto { UserName = user.Username, Token = tokenService.CreateToken(user) };
+        return new UserDto
+        {
+            Username = user.UserName,
+            KnownAs = user.KnownAs,
+            Token = tokenService.CreateToken(user),
+            Gender = user.Gender,
+            PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+        };
     }
 
     private async Task<bool> UserExists(string username)
     {
-        return await context.Users.AnyAsync(x => x.Username.ToLower() == username.ToLower());
+        return await context.Users.AnyAsync(x => x.UserName.ToLower() == username.ToLower());
     }
 }

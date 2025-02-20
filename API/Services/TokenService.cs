@@ -21,10 +21,11 @@ public class TokenService(IConfiguration config) : ITokenService
         // by using encoding and then UTF8 just as with them before and get bytes.
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
 
-        // token contains claims about the user (claim is user would claim about themselves)
-        // new Claim (ClaimTypes.NameIdentifier, user.Username)
-        //  use name identifier and set this to be the user dot username.
-        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, user.Username) };
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.UserName)
+        };
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
