@@ -15,15 +15,19 @@ public static class HttpExtensions
             data.TotalPages
         );
 
+        // camelCase
         var jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
+        // The "Pagination" header will contain the JSON-serialized pagination metadata.
         response.Headers.Append(
             "Pagination",
             JsonSerializer.Serialize(paginationHeader, jsonOptions)
         );
+
+        // ensure that the "Pagination" header is exposed to the client
         response.Headers.Append("Access-Control-Expose-Headers", "Pagination");
     }
 }

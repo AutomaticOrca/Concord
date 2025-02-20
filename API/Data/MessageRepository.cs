@@ -28,6 +28,7 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
         return await context.Messages.FindAsync(id);
     }
 
+    // Get message conversation between two users
     public async Task<IEnumerable<MessageDto>> GetMessageThread(
         string currentUsername,
         string recipientUsername
@@ -49,33 +50,41 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
             .OrderBy(x => x.MessageSent)
             .ToListAsync();
 
+        // Filter out unread messages where the current user is the recipient
         var unreadMessages = messages
             .Where(x => x.DateRead == null && x.RecipientUsername == currentUsername)
             .ToList();
 
+        // If there are unread messages, mark them as read and update the database
         if (unreadMessages.Count != 0)
         {
             unreadMessages.ForEach(x => x.DateRead = DateTime.Now);
             await context.SaveChangesAsync();
         }
 
+        // Map the Message entities to MessageDto objects and return the result
         return mapper.Map<IEnumerable<MessageDto>>(messages);
     }
 
-    public async Task<PagedList<MessageDto>> GetMssagedForUsers(MessageParams messageParams)
+    public async Task<PagedList<MessageDto>> GetMssagesForUsers(MessageParams messageParams)
     {
+        // most recent messages first
         var query = context.Messages.OrderByDescending(x => x.MessageSent).AsQueryable();
 
+        // Apply filters based on the message container
         query = messageParams.Container switch
         {
+            // user is the recipient
             "Inbox"
                 => query.Where(x =>
                     x.Recipient.UserName == messageParams.Username && x.RecipientDeleted == false
                 ),
+            // user is the sender
             "Outbox"
                 => query.Where(x =>
                     x.Sender.UserName == messageParams.Username && x.SenderDeleted == false
                 ),
+            // Default: user is the recipient
             _
                 => query.Where(x =>
                     x.Recipient.UserName == messageParams.Username

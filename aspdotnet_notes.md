@@ -440,9 +440,63 @@ LogUserActivity
 
 
 
+Helper/PagedList.cs/createAsync
+
+```cs
+using System;
+using System.Diagnostics;
+using API.DTOs;
+using Microsoft.EntityFrameworkCore;
+
+namespace API.Helpers;
+
+public class PagedList<T> : List<T>
+{
+    public PagedList(IEnumerable<T> items, int count, int pageNumber, int pageSize)
+    {
+        CurrentPage = pageNumber;
+        TotalPages = (int)Math.Ceiling(count / (double)pageSize);
+        PageSize = pageSize;
+        TotalCount = count;
+        AddRange(items);
+    }
+
+    public int CurrentPage { get; set; }
+    public int TotalPages { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+
+    public static async Task<PagedList<T>> CreateAsync(
+        IQueryable<T> source,
+        int pageNumber,
+        int pageSize
+    )
+    {
+        var count = await source.CountAsync();
+        var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+        return new PagedList<T>(items, count, pageNumber, pageSize);
+    }
+}
+```
+
+`CountAsync` is used to asynchronously calculate the total count.
+
+By using `Skip` to skip the records that have already been displayed 
+and then using `Take` to retrieve the records for the current page, this approach effectively reduces the amount of data queried each time, returning only the portion of data requested by the user.
+
+
+
+API/Helper/PaginationParams.cs	client ---> server: client tells server how to pagination
+
+API/Helper/PaginationHeader.cs	server ---> client: server tells client pagination metadata
+
+
+
+
+
 # Section 14: Adding the likes feature
 
-### Intro
+**Intro**
 
 Many to Many Relationships:
 
@@ -471,7 +525,7 @@ focus on the domain of your application and start creating classes for your doma
 
 
 
-### Adding a likes entity
+**Adding a likes entity**
 
 Entity/AppUser.cs
 
@@ -547,7 +601,7 @@ dotnet ef migrations add UserLikesAdded
 
 
 
-### Adding a likes repository
+**Adding a likes repository**
 
 API/Interfaces/ILikesRepository.cs
 
@@ -582,6 +636,8 @@ many to many to many relationships
 
 
 user can receive many messages and can send many messages --> join table between users 
+
+
 
 
 
@@ -675,7 +731,98 @@ dotnet ef migrations add MessageEntityAdded
 
 
 
-Setting up the message repository
+# 16. Setting up the message repository
+
+**Intro**
+
+> .NET Identity
+> Role Management
+> Policy based authorisation
+> UserManager<T>
+> SiginInManager<T>
+> RoleManager<T>
+
+
+
+Setting up the entities
+
+Join table between `AppUser` and `AppRole`  ---> `AppUserRole`
+
+
+
+
+
+Configuring the DbContext
+
+
+
+Configuring the startup class
+
+
+
+Refactoring and adding a new migration
+
+
+
+Updating the seed method
+
+```shell
+dotnet ef database drop
+```
+
+
+
+
+
+Updating the account controller
+
+202 6分钟 debug
+
+
+
+Adding roles to the app
+
+
+
+Adding the roles to the JWT token
+
+
+
+Adding policy based authorisation
+
+
+
+Getting the users with roles
+
+
+
+Editing user roles
+
+
+
+Adding an admin component
+
+
+
+Adding an admin guard
+
+
+
+Adding a custom directive
+
+
+
+Adding the edit roles component
+
+
+
+Setting up modals
+
+
+
+Editing roles part two
+
+
 
 
 
@@ -694,6 +841,8 @@ Getting the messages from the Repo
 Getting the message thread for 2 users
 
 
+
+Deleting messages on the API
 
 
 
