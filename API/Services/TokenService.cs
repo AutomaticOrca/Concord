@@ -17,9 +17,6 @@ public class TokenService(IConfiguration config, UserManager<AppUser> userManage
             config["TokenKey"] ?? throw new Exception("Cannot access tokenKey from appsettings");
         if (tokenKey.Length < 64)
             throw new Exception("Your tokenKey needs to be longer");
-
-        // create a new symmetric security key
-        // by using encoding and then UTF8 just as with them before and get bytes.
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
 
         if (user.UserName == null)
@@ -38,14 +35,14 @@ public class TokenService(IConfiguration config, UserManager<AppUser> userManage
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(claims), // Subject: Gets or sets the output claims to be included in the issued token.
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddDays(7),
-            SigningCredentials = creds // Gets or sets the credentials that are used to sign the token.
+            SigningCredentials = creds 
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler(); // Initialize the token handler, which will create and serialize the token.
-        var token = tokenHandler.CreateToken(tokenDescriptor); // Create the token using the token handler and token descriptor
+        var tokenHandler = new JwtSecurityTokenHandler(); 
+        var token = tokenHandler.CreateToken(tokenDescriptor); 
 
-        return tokenHandler.WriteToken(token); // Serialize the token to a string and return
+        return tokenHandler.WriteToken(token); 
     }
 }
