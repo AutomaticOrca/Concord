@@ -22,6 +22,8 @@ public class DataContext(DbContextOptions options)
     // DbSets representing tables
     public DbSet<UserLike> Likes { get; set; }
     public DbSet<Message> Messages { get; set; }
+    public DbSet<Group> Groups { get; set; }
+    public DbSet<Connection> Connections { get; set; }
 
     // Configure entity relationships and keys
     protected override void OnModelCreating(ModelBuilder builder)
