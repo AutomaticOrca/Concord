@@ -30,11 +30,6 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         return await context.Users.Include(x => x.Photos).ToListAsync();
     }
 
-    public async Task<bool> SaveAllAsync()
-    {
-        return await context.SaveChangesAsync() > 0;
-    }
-
     public void Update(AppUser user)
     {
         context.Entry(user).State = EntityState.Modified;
@@ -55,9 +50,9 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         // age filter
         var minDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge - 1));
-        var MaxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge - 1));
+        var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge - 1));
 
-        query = query.Where(x => x.DateOfBirth >= minDob && x.DateOfBirth <= MaxDob);
+        query = query.Where(x => x.DateOfBirth >= minDob && x.DateOfBirth <= maxDob);
 
         // sorting
         query = userParams.OrderBy switch
