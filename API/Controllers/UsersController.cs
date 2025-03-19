@@ -38,7 +38,7 @@ public class UsersController(
         if (user == null)
             return NotFound();
         // return mapper.Map<MemberDto>(user);
-        return user;
+        return Ok(user);
     }
 
     [HttpPut]

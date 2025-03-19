@@ -94,4 +94,13 @@ public class MessagesController(
 
         return BadRequest("Problem deleting the message");
     }
+    
+    [HttpGet("chats")]
+    public async Task<ActionResult<IEnumerable<ChatDto>>> GetChatListForUser()
+    {
+        var username = User.GetUsername();
+        var chats = await unitOfWork.MessageRepository.GetUserChats(username);
+
+        return Ok(chats);
+    }
 }
