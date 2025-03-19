@@ -105,4 +105,42 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
     {
         context.Connections.Remove(connection);
     }
+    
+    public async Task<IEnumerable<ChatDto>> GetUserChats(string username)
+    {
+        var messages = await context.Messages
+            .Where(m => m.SenderUsername == username || m.RecipientUsername == username)
+            .OrderByDescending(m => m.MessageSent)
+            .ToListAsync(); 
+
+        var usersList = await context.Users
+            .Include(u => u.Photos) 
+            .Select(u => new { 
+                u.UserName, 
+                PhotoUrl = u.Photos.FirstOrDefault(p => p.IsMain)!.Url ?? "" 
+            })
+            .ToListAsync();
+
+        var userDict = usersList
+            .Where(u => !string.IsNullOrEmpty(u.UserName)) 
+            .ToDictionary(u => u.UserName ?? "", u => u.PhotoUrl ?? "");
+
+        var groupedMessages = messages
+            .GroupBy(m => m.SenderUsername == username ? m.RecipientUsername : m.SenderUsername)
+            .Select(g => new ChatDto
+            {
+                ChatPartnerUsername = g.Key ?? string.Empty,
+                ChatPartnerPhotoUrl = userDict.GetValueOrDefault(g.Key ?? string.Empty, ""),
+                LastMessage = g.OrderByDescending(m => m.MessageSent).First().Content,
+                LastMessageTime = g.OrderByDescending(m => m.MessageSent).First().MessageSent,
+                UnreadCount = g.Count(m => m.RecipientUsername == username && m.DateRead == null)
+            })
+            .ToList();
+
+        return groupedMessages;
+    }
+
+
+
+    
 }
