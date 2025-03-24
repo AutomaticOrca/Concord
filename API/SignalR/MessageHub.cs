@@ -26,7 +26,6 @@ public class MessageHub(IUnitOfWork unitOfWork,
         var messages = await unitOfWork.MessageRepository.GetMessageThread(Context.User.GetUsername(), otherUser!);
 
         if (unitOfWork.HasChanges()) await unitOfWork.Complete();
-        
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -79,7 +78,35 @@ public class MessageHub(IUnitOfWork unitOfWork,
 
         if (await unitOfWork.Complete()) 
         {
+            var messageDto = mapper.Map<MessageDto>(message);
+            
             await Clients.Group(groupName).SendAsync("NewMessage", mapper.Map<MessageDto>(message));
+
+            var senderChatDto = new ChatDto
+            {
+                ChatPartnerUsername = recipient.UserName!,
+                ChatPartnerPhotoUrl = recipient.Photos.FirstOrDefault(p => p.IsMain)?.Url ?? "",
+                LastMessage = message.Content,
+                LastMessageTime = message.MessageSent,
+                UnreadCount = 0
+            };
+            await Clients.Caller.SendAsync("ChatListItemUpdated", senderChatDto);
+            
+            var recipientChatDto = new ChatDto
+            {
+                ChatPartnerUsername = sender.UserName!,
+                ChatPartnerPhotoUrl = sender.Photos.FirstOrDefault(p => p.IsMain)?.Url ?? "",
+                LastMessage = message.Content,
+                LastMessageTime = message.MessageSent,
+                UnreadCount = 1
+            };
+            
+            var recipientConnections = await PresenceTracker.GetConnectionsForUser(recipient.UserName);
+            if (recipientConnections.Any())
+            {
+                await presenceHub.Clients.Clients(recipientConnections)
+                    .SendAsync("ChatListItemUpdated", recipientChatDto);
+            }
         }
     }
 

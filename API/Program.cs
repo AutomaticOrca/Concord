@@ -11,6 +11,20 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSignalR();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", builder =>
+    {
+        builder
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .WithOrigins("http://localhost:5173", "https://localhost:5173", "http://localhost:5174", "https://localhost:5174");
+    });
+});
+
 // Add services to the container.
 builder.Services.AddApplicationServices(builder.Configuration); // Extensions/ApplicationServices
 builder.Services.AddIdentityServices(builder.Configuration); // Extensions/IndentityServices
@@ -18,15 +32,11 @@ builder.Services.AddIdentityServices(builder.Configuration); // Extensions/Inden
 // Builds the web application
 var app = builder.Build();
 
+app.UseWebSockets();
+
+app.UseCors("CorsPolicy");
 // use custom middleware to handle global exceptions
 app.UseMiddleware<ExceptionMiddleware>();
-
-// Configure CORS to allow requests from specific origins
-app.UseCors(x =>
-    x.AllowAnyHeader()
-        .AllowAnyMethod().AllowCredentials()
-        .WithOrigins("http://localhost:5173", "https://localhost:5173")
-);
 
 // Configure the HTTP request pipeline.
 // if (app.Environment.IsDevelopment())
