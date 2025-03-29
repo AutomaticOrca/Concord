@@ -18,7 +18,10 @@ public static class ApplicationServiceExtensions
         services.AddControllers();
 
         // Configures the database context (DataContext) to use SQLite, with the connection string provided in the configuration
-        services.AddDbContext<DataContext>(opt => { opt.UseSqlite(config.GetConnectionString("DefaultConnection")); });
+        services.AddDbContext<DataContext>(opt =>
+        {
+            opt.UseSqlServer(config.GetConnectionString("DefaultConnection"));
+        });
 
         services.AddCors();
         services.AddScoped<ITokenService, TokenService>();
