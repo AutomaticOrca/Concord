@@ -15,14 +15,22 @@ builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("CorsPolicy", builder =>
-    {
-        builder
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials()
-            .WithOrigins("http://localhost:5173", "https://localhost:5173", "http://localhost:5174", "https://localhost:5174");
-    });
+    options.AddPolicy(
+        "CorsPolicy",
+        builder =>
+        {
+            builder
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .WithOrigins(
+                    "http://localhost:5173",
+                    "https://localhost:5173",
+                    "http://localhost:5174",
+                    "https://localhost:5174"
+                );
+        }
+    );
 });
 
 // Add services to the container.
@@ -35,6 +43,7 @@ var app = builder.Build();
 app.UseWebSockets();
 
 app.UseCors("CorsPolicy");
+
 // use custom middleware to handle global exceptions
 app.UseMiddleware<ExceptionMiddleware>();
 
@@ -44,7 +53,6 @@ app.UseMiddleware<ExceptionMiddleware>();
 //     app.UseSwagger();
 //     app.UseSwaggerUI();
 // }
-
 
 // authentication middleware (JWT-based)
 app.UseAuthentication();
@@ -56,6 +64,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<PresenceHub>("hubs/presence");
 app.MapHub<MessageHub>("hubs/message");
+
 // Database migration and seeding
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;

@@ -11,10 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class MessagesController(
-    IUnitOfWork unitOfWork,
-    IMapper mapper
-) : BaseApiController
+public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper) : BaseApiController
 {
     [HttpPost]
     public async Task<ActionResult<MessageDto>> CreateMessage(CreateMessageDto createMessageDto)
@@ -25,7 +22,9 @@ public class MessagesController(
             return BadRequest("You cannot message yourself");
 
         var sender = await unitOfWork.UserRepository.GetUserByUsernameAsync(username);
-        var recipient = await unitOfWork.UserRepository.GetUserByUsernameAsync(createMessageDto.RecipientUsername);
+        var recipient = await unitOfWork.UserRepository.GetUserByUsernameAsync(
+            createMessageDto.RecipientUsername
+        );
 
         if (
             recipient == null
@@ -46,7 +45,8 @@ public class MessagesController(
 
         unitOfWork.MessageRepository.AddMessage(message);
 
-        if (await unitOfWork.Complete()) return Ok(mapper.Map<MessageDto>(message));
+        if (await unitOfWork.Complete())
+            return Ok(mapper.Map<MessageDto>(message));
 
         return BadRequest("Failed to save message");
     }
@@ -86,15 +86,17 @@ public class MessagesController(
         if (message.RecipientUsername == username)
             message.RecipientDeleted = true;
 
-        if (message is {SenderDeleted: true, RecipientDeleted: true}) {
+        if (message is { SenderDeleted: true, RecipientDeleted: true })
+        {
             unitOfWork.MessageRepository.DeleteMessage(message);
         }
 
-        if (await unitOfWork.Complete()) return Ok();
+        if (await unitOfWork.Complete())
+            return Ok();
 
         return BadRequest("Problem deleting the message");
     }
-    
+
     [HttpGet("chats")]
     public async Task<ActionResult<IEnumerable<ChatDto>>> GetChatListForUser()
     {
