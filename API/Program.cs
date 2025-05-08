@@ -60,10 +60,16 @@ app.UseAuthentication();
 // authorization middleware
 app.UseAuthorization();
 
+// wwwroot
+app.UseStaticFiles();
+
 // Map incoming requests to the appropriate controllers
 app.MapControllers();
 app.MapHub<PresenceHub>("hubs/presence");
 app.MapHub<MessageHub>("hubs/message");
+
+// SPA
+app.MapFallbackToFile("index.html");
 
 // Database migration and seeding
 using var scope = app.Services.CreateScope();
